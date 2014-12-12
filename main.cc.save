@@ -7,7 +7,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <algorithm>
-#include <cstdlib>
 
 using std::min;
 using std::max;
@@ -92,11 +91,12 @@ public:
         for (int y = 0; y < screen_height; ++y) {
           const Pixel &p = getPixel(x, y);
           // Display upside down on my desk. Lets flip :)
-          int disp_x = screen_width - x;
-          int disp_y = screen_height - y;
+          int disp_x = screen_width -x;
+          int disp_y = screen_height -y;
           matrix_->SetPixel(disp_x, disp_y, p.red, p.green, p.blue);
         }
       }
+	//printf("In image scroller run\n");
       ++horizontal_position_;
     }
   }
@@ -130,45 +130,69 @@ private:
 };
 
 int main(int argc, char *argv[]) {
- 
-  int length = atoi(argv[2]);
+  GPIO io [3];
+  RGBMatrix m [3];
+  RGBMatrixManipulator *image_gen [3] = {NULL, NULL, NULL};
 
-while(1){
- for(int i = 0; i < length; i++) {
-	GPIO io;
+  for(int i = 0; i < 3; i++ ) {
+    if (!io[i].Init())
+      return 1;
 
-	if (!io.Init())
-    	return 1;
- 
-  	RGBMatrix m(&io);
- 
-  RGBMatrixManipulator *image_gen = NULL;
+    RGBMatrix m[i] = m(;
+  RGBMatrix m2(&io2);
+  RGBMatrix m3(&io3);
+
+  RGBMatrixManipulator *image_gen1 = NULL;
+  RGBMatrixManipulator *image_gen2 = NULL;
+  RGBMatrixManipulator *image_gen3 = NULL;
 
   if (argc > 1) {
-    ImageScroller *scroller = new ImageScroller(&m);
+    ImageScroller *scroller1 = new ImageScroller(&m1);
+    ImageScroller *scroller2 = new ImageScroller(&m2);
+    ImageScroller *scroller3 = new ImageScroller(&m3);
 
-	char command[50];
-	sprintf(&command[0], "%s%d.ppm", argv[1], i);
+    if (!scroller1->LoadPPM(argv[1]))
+      return 1;
+    if (!scroller2->LoadPPM(argv[2]))
+      return 1;
+    if (!scroller3->LoadPPM(argv[3]))
+      return 1;
 
-      if (!scroller->LoadPPM(command))
-	return 1;
-
-    image_gen = scroller;
+    image_gen1 = scroller1;
+    image_gen2 = scroller2;
+    image_gen3 = scroller3;
   }
 
-  if (image_gen == NULL)
+  if (image_gen1 == NULL || image_gen2 == NULL || image_gen3 == NULL)
     return 1;
 
- RGBMatrixManipulator *updater = new DisplayUpdater(&m);
+  RGBMatrixManipulator *updater1 = new DisplayUpdater(&m1);
+  RGBMatrixManipulator *updater2 = new DisplayUpdater(&m2);
+  RGBMatrixManipulator *updater3 = new DisplayUpdater(&m3);
 
-  updater->Start(10);
-  image_gen->Start();
-  usleep(70000);
-  delete image_gen;
-  delete updater;
-  m.ClearScreen();
-  m.UpdateScreen();
-}
-}
+  updater1->Start(10);
+  image_gen1->Start();
+  getchar();
+  delete image_gen1;
+  delete updater1;
+  m1.ClearScreen();
+  m1.UpdateScreen();
+
+  updater2->Start(10);
+  image_gen2->Start();
+  getchar();
+  delete image_gen2;
+  delete updater2;
+  m2.ClearScreen();
+  m2.UpdateScreen();
+
+  updater3->Start(10);
+  image_gen3->Start();
+  getchar();
+  delete image_gen3;
+  delete updater3;
+  m3.ClearScreen();
+  m3.UpdateScreen();
+
   return 0;
 }
