@@ -14,4 +14,4 @@ GPIO pins can be accessed:
      $ make
      $ sudo ./led-matrix <name of ppm> <N number of files>
 
-ex. sudo ./led-matrix tmp- 18
+For this example: sudo ./led-matrix tmp- 18
